@@ -105,9 +105,66 @@ def depthFirstSearch(problem: SearchProblem):
     return []
 
 def breadthFirstSearch(problem: SearchProblem):
-    """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    """
+    Q2 — Breadth-First Search (graph search).
+
+    Explores nodes level-by-level using a FIFO queue, so the shallowest
+    (fewest-step) path to the goal is always found first.
+    When all step costs are equal (cost = 1), this guarantees the shortest path.
+
+    Returns a list of actions from the start state to a goal state,
+    or an empty list [] if the start is already a goal or no path exists.
+    """
+
+    # -------------------------------------------------------------------------
+    # MEMBER C — Q2: breadthFirstSearch START
+    # -------------------------------------------------------------------------
+
+    # Fringe: util.Queue gives FIFO order (shallowest node expanded first).
+    # Each item stored is (state, path) where:
+    #   state — current Pacman position (or any hashable search state)
+    #   path  — list of actions taken from the start to reach this state
+    fringe = util.Queue()
+
+    startState = problem.getStartState()
+    fringe.push((startState, []))   # start node; path is empty at the beginning
+
+    # Expanded set: tracks states already popped and fully processed.
+    # Using a set gives O(1) average-time membership tests.
+    # Only states popped from the fringe are added here — NOT states pushed —
+    # so a cheaper path found later can still replace an earlier, costlier one.
+    expanded = set()
+
+    while not fringe.isEmpty():
+
+        # Pop the next shallowest node from the front of the queue.
+        state, path = fringe.pop()
+
+        # Graph-search duplicate check: skip if we already expanded this state.
+        if state in expanded:
+            continue
+
+        # Mark state as expanded before generating its successors.
+        expanded.add(state)
+
+        # Goal check is performed AFTER popping (not on push).
+        # This ensures we have the optimal (shortest) path when we stop.
+        if problem.isGoalState(state):
+            return path     # path is the ordered list of actions to reach here
+
+        # Expand: push each unvisited successor with its updated action path.
+        for successor, action, _stepCost in problem.getSuccessors(state):
+            if successor not in expanded:
+                # path + [action] creates a NEW list — we must not mutate the
+                # shared 'path' object because other fringe entries reference it.
+                fringe.push((successor, path + [action]))
+
+    # Fringe exhausted without finding the goal — no solution exists.
+    return []
+
+    # -------------------------------------------------------------------------
+    # MEMBER C — Q2: breadthFirstSearch END
+    # -------------------------------------------------------------------------
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""

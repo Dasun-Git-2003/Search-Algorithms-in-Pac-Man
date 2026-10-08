@@ -290,45 +290,106 @@ class CornersProblem(search.SearchProblem):
                 print('Warning: no food in corner ' + str(corner))
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
 
+    # =========================================================================
+    # MEMBER C — Q5: CornersProblem START
+    # =========================================================================
+    #
+    # STATE DESIGN
+    # ------------
+    # We represent each search state as a pair:
+    #
+    #   (position, visitedCorners)
+    #
+    #   position       : (x, y) integer tuple — Pac-Man's current cell.
+    #   visitedCorners : tuple of 4 booleans, one per corner in the same order
+    #                    as self.corners → (BL, TL, BR, TR).
+    #                    True means that corner has already been visited.
+    #
+    # WHY this representation?
+    #   • Tuples are hashable — they can be stored in the 'expanded' set used
+    #     by graph search without any special handling.
+    #   • We only store what CAN CHANGE during search (position + visited flags).
+    #   • Walls never change, so they stay in self.walls (problem data) and are
+    #     NOT part of the state — that would make the state huge and the Grid
+    #     object is not hashable anyway.
+    # =========================================================================
+
     def getStartState(self):
         """
-        Returns the start state (in your state space, not the full Pacman state
-        space)
+        Returns the initial search state: (startingPosition, visitedCorners).
+
+        If Pac-Man begins on a corner, that corner is pre-marked True so we
+        don't need special handling anywhere else.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # Build the initial visited tuple.
+        # For each corner, check whether Pac-Man's starting position equals it.
+        # The generator produces 4 True/False values → tuple() freezes them.
+        startVisited = tuple(
+            self.startingPosition == corner
+            for corner in self.corners
+        )
+        return (self.startingPosition, startVisited)
 
     def isGoalState(self, state: Any):
         """
-        Returns whether this search state is a goal state of the problem.
+        Returns True when all four corners have been visited.
+
+        We only need the visitedCorners part of the state; position is ignored.
+        all() returns True only if every element of the iterable is True.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        _position, visitedCorners = state
+        return all(visitedCorners)  # True only when every boolean is True
 
     def getSuccessors(self, state: Any):
         """
-        Returns successor states, the actions they require, and a cost of 1.
+        Returns a list of (successorState, action, stepCost=1) triples,
+        one for each legal move from the current state.
 
-         As noted in search.py:
-            For a given state, this should return a list of triples, (successor,
-            action, stepCost), where 'successor' is a successor to the current
-            state, 'action' is the action required to get there, and 'stepCost'
-            is the incremental cost of expanding to that successor
+        Steps for each direction:
+          1. Unpack the current state into position and visitedCorners.
+          2. Compute the candidate next cell using the action vector.
+          3. Skip the move if the next cell is a wall.
+          4. Update visitedCorners: OR each existing boolean with whether
+             the new position equals that corner.  This marks newly visited
+             corners without mutating the old (shared, immutable) tuple.
+          5. Append (nextState, action, 1) to the successors list.
         """
-
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            # Add a successor state to the successor list if the action is legal
-            # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
 
-            "*** YOUR CODE HERE ***"
+            # Step 1 — unpack state
+            currentPosition, visitedCorners = state
+            x, y = currentPosition
 
-        self._expanded += 1 # DO NOT CHANGE
+            # Step 2 — compute next cell from action vector
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+
+            # Step 3 — wall check: skip illegal moves
+            if self.walls[nextx][nexty]:
+                continue
+
+            nextPosition = (nextx, nexty)
+
+            # Step 4 — update visitedCorners immutably.
+            # For each (visited, corner) pair: keep True if already visited,
+            # OR set True if nextPosition happens to be that corner.
+            newVisited = tuple(
+                visited or (nextPosition == corner)
+                for visited, corner in zip(visitedCorners, self.corners)
+            )
+
+            # Step 5 — build and record the successor triple
+            nextState = (nextPosition, newVisited)
+            successors.append((nextState, action, 1))  # step cost is always 1
+
+        self._expanded += 1  # DO NOT CHANGE — autograder reads this counter
         return successors
+
+    # =========================================================================
+    # MEMBER C — Q5: CornersProblem END
+    # =========================================================================
+
 
     def getCostOfActions(self, actions):
         """
