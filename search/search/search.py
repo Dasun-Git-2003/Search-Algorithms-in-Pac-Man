@@ -87,8 +87,30 @@ def depthFirstSearch(problem: SearchProblem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    
+
+    frontier = util.Stack()
+    frontier.push((problem.getStartState(), []))
+
+    # Expanded set: tracks states that have been expanded to ensure no state
+    # is expanded more than once (Graph Search).
+    expanded = set()
+
+    while not frontier.isEmpty():
+        state, actions = frontier.pop()
+
+        # Goal check
+        if problem.isGoalState(state):
+            return actions
+
+        # Expand state if not already visited
+        if state not in expanded:
+            expanded.add(state)
+            for successor, action, stepCost in problem.getSuccessors(state):
+                if successor not in expanded:
+                    frontier.push((successor, actions + [action]))
+
+    return []
+  
 def breadthFirstSearch(problem: SearchProblem):
     """
     Q2 — Breadth-First Search (graph search).
