@@ -550,9 +550,90 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
+    # =========================================================================
+    # MEMBER (IT24610825) — Q7: Food Heuristic START
+    # =========================================================================
+    #
+    # HEURISTIC DESIGN & MATHEMATICAL FORMULATION
+    # -------------------------------------------
+    # Let F be the set of remaining food dots, and p be Pac-Man's current position.
+    # To collect all food dots, Pac-Man must visit every pair of dots (f1, f2) in F.
+    # For any chosen pair {f1, f2} ⊆ F:
+    #   Pac-Man must first reach either f1 or f2, costing at least min(d(p, f1), d(p, f2)).
+    #   Pac-Man must then traverse between f1 and f2, costing at least d(f1, f2).
+    # Thus, for any pair {f1, f2}:
+    #   h_{f1, f2}(p) = min(d(p, f1), d(p, f2)) + d(f1, f2)
+    #
+    # Since this lower bound holds for EVERY pair of dots, we take the maximum:
+    #   h(state) = max_{f1, f2 ∈ F} [ min(d(p, f1), d(p, f2)) + d(f1, f2) ]
+    # (If |F| == 1, h(state) = d(p, f1); if |F| == 0, h(state) = 0).
+    #
+    # ADMISSIBILITY:
+    #   Every valid path collecting all food must visit both f1 and f2 in some order:
+    #   either p -> ... -> f1 -> ... -> f2  (cost >= d(p, f1) + d(f1, f2))
+    #   or     p -> ... -> f2 -> ... -> f1  (cost >= d(p, f2) + d(f2, f1)).
+    #   Since both are >= min(d(p, f1), d(p, f2)) + d(f1, f2), this lower bound
+    #   never overestimates the true cost h*(state).
+    #
+    # CONSISTENCY (MONOTONICITY):
+    #   Taking 1 step from p to p' changes d(p, f) by at most 1 for any fixed f,
+    #   so min(d(p, f1), d(p, f2)) changes by at most 1.
+    #   When a food dot is eaten at p', the new food set F' is a subset of F,
+    #   which can only reduce or maintain the set of candidate pairs.
+    #   Therefore: h(p) - h(p') <= 1 = cost(p, p').
+    # =========================================================================
+    import collections
+
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    foodList = foodGrid.asList()
+
+    # Goal state: no food remaining
+    if not foodList:
+        return 0
+
+    # Cache single-source BFS shortest path distances from food dots across calls
+    if 'distCache' not in problem.heuristicInfo:
+        problem.heuristicInfo['distCache'] = {}
+    distCache = problem.heuristicInfo['distCache']
+    walls = problem.walls
+
+    # Compute true maze distances from each uncomputed food dot using BFS
+    for food in foodList:
+        if food not in distCache:
+            dist = {food: 0}
+            queue = collections.deque([food])
+            while queue:
+                curr = queue.popleft()
+                d = dist[curr]
+                cx, cy = curr
+                for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nx, ny = cx + dx, cy + dy
+                    if not walls[nx][ny] and (nx, ny) not in dist:
+                        dist[(nx, ny)] = d + 1
+                        queue.append((nx, ny))
+            distCache[food] = dist
+
+    # If only one dot remains, return the exact maze distance to it
+    if len(foodList) == 1:
+        return distCache[foodList[0]].get(position, 0)
+
+    # Initialize with the farthest single dot from Pac-Man
+    maxHeuristic = max(distCache[f].get(position, 0) for f in foodList)
+
+    # Maximize lower bound across all pairs of food dots
+    numFoods = len(foodList)
+    for i in range(numFoods):
+        f1 = foodList[i]
+        d1 = distCache[f1].get(position, 0)
+        for j in range(i + 1, numFoods):
+            f2 = foodList[j]
+            d2 = distCache[f2].get(position, 0)
+            pairDist = distCache[f1].get(f2, 0)
+            h = pairDist + (d1 if d1 < d2 else d2)
+            if h > maxHeuristic:
+                maxHeuristic = h
+
+    return maxHeuristic
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
