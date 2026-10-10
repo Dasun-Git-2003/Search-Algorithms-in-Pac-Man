@@ -424,41 +424,24 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     "*** YOUR CODE HERE ***"
     import itertools
 
-    currentPosition, visitedCorners = state
-
-    # Identify unvisited corners
+    position, visitedCorners = state
     unvisited = [corner for corner, visited in zip(corners, visitedCorners) if not visited]
+
     if not unvisited:
         return 0
 
-    # Cache BFS shortest-path distances from each corner to all maze cells
-    if not hasattr(problem, '_cornerDistances'):
-        problem._cornerDistances = {}
-        for c in corners:
-            distMap = {c: 0}
-            queue = util.Queue()
-            queue.push(c)
-            while not queue.isEmpty():
-                curr = queue.pop()
-                d = distMap[curr]
-                cx, cy = curr
-                for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                    nx, ny = cx + dx, cy + dy
-                    if not walls[nx][ny] and (nx, ny) not in distMap:
-                        distMap[(nx, ny)] = d + 1
-                        queue.push((nx, ny))
-            problem._cornerDistances[c] = distMap
+    if len(unvisited) == 1:
+        return abs(position[0] - unvisited[0][0]) + abs(position[1] - unvisited[0][1])
 
-    # Calculate the minimum maze distance tour visiting all remaining unvisited corners
-    minCost = float('inf')
+    min_distance = float('inf')
     for perm in itertools.permutations(unvisited):
-        cost = problem._cornerDistances[perm[0]].get(currentPosition, util.manhattanDistance(currentPosition, perm[0]))
+        dist = abs(position[0] - perm[0][0]) + abs(position[1] - perm[0][1])
         for i in range(len(perm) - 1):
-            cost += problem._cornerDistances[perm[i]].get(perm[i + 1], util.manhattanDistance(perm[i], perm[i + 1]))
-        if cost < minCost:
-            minCost = cost
+            dist += abs(perm[i][0] - perm[i+1][0]) + abs(perm[i][1] - perm[i+1][1])
+        if dist < min_distance:
+            min_distance = dist
 
-    return minCost
+    return min_distance
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
