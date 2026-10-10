@@ -105,14 +105,97 @@ def depthFirstSearch(problem: SearchProblem):
     return []
 
 def breadthFirstSearch(problem: SearchProblem):
-    """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    """
+    Q2 — Breadth-First Search (graph search).
+
+    Explores nodes level-by-level using a FIFO queue, so the shallowest
+    (fewest-step) path to the goal is always found first.
+    When all step costs are equal (cost = 1), this guarantees the shortest path.
+
+    Returns a list of actions from the start state to a goal state,
+    or an empty list [] if the start is already a goal or no path exists.
+    """
+
+    # -------------------------------------------------------------------------
+    # MEMBER C — Q2: breadthFirstSearch START
+    # -------------------------------------------------------------------------
+
+    # Fringe: util.Queue gives FIFO order (shallowest node expanded first).
+    # Each item stored is (state, path) where:
+    #   state — current Pacman position (or any hashable search state)
+    #   path  — list of actions taken from the start to reach this state
+    fringe = util.Queue()
+
+    startState = problem.getStartState()
+    fringe.push((startState, []))   # start node; path is empty at the beginning
+
+    # Expanded set: tracks states already popped and fully processed.
+    # Using a set gives O(1) average-time membership tests.
+    # Only states popped from the fringe are added here — NOT states pushed —
+    # so a cheaper path found later can still replace an earlier, costlier one.
+    expanded = set()
+
+    while not fringe.isEmpty():
+
+        # Pop the next shallowest node from the front of the queue.
+        state, path = fringe.pop()
+
+        # Graph-search duplicate check: skip if we already expanded this state.
+        if state in expanded:
+            continue
+
+        # Mark state as expanded before generating its successors.
+        expanded.add(state)
+
+        # Goal check is performed AFTER popping (not on push).
+        # This ensures we have the optimal (shortest) path when we stop.
+        if problem.isGoalState(state):
+            return path     # path is the ordered list of actions to reach here
+
+        # Expand: push each unvisited successor with its updated action path.
+        for successor, action, _stepCost in problem.getSuccessors(state):
+            if successor not in expanded:
+                # path + [action] creates a NEW list — we must not mutate the
+                # shared 'path' object because other fringe entries reference it.
+                fringe.push((successor, path + [action]))
+
+    # Fringe exhausted without finding the goal — no solution exists.
+    return []
+
+    # -------------------------------------------------------------------------
+    # MEMBER C — Q2: breadthFirstSearch END
+    # -------------------------------------------------------------------------
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = util.PriorityQueue()
+    frontier.push((problem.getStartState(), [], 0), 0)
+
+    best_cost = {}
+
+    while not frontier.isEmpty():
+        state, path, cost = frontier.pop()
+
+        if state in best_cost and cost >= best_cost[state]:
+            continue
+
+        best_cost[state] = cost
+
+        if problem.isGoalState(state):
+            return path
+
+        for successor, action, step_cost in problem.getSuccessors(state):
+            new_cost = cost + step_cost
+
+            if successor not in best_cost or new_cost < best_cost[successor]:
+                frontier.push(
+                    (successor, path + [action], new_cost),
+                    new_cost
+                )
+
+    return []
+    
 
 def nullHeuristic(state, problem=None):
     """
@@ -124,7 +207,37 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = util.PriorityQueue()
+
+    start = problem.getStartState()
+    frontier.push((start, [], 0), heuristic(start, problem))
+
+    best_cost = {}
+
+    while not frontier.isEmpty():
+        state, path, cost = frontier.pop()
+
+        if state in best_cost and cost >= best_cost[state]:
+            continue
+
+        best_cost[state] = cost
+
+        if problem.isGoalState(state):
+            return path
+
+        for successor, action, step_cost in problem.getSuccessors(state):
+            new_cost = cost + step_cost
+
+            if successor not in best_cost or new_cost < best_cost[successor]:
+                priority = new_cost + heuristic(successor, problem)
+
+                frontier.push(
+                    (successor, path + [action], new_cost),
+                    priority
+                )
+
+    return []
+    
 
 
 # Abbreviations
