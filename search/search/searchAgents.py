@@ -422,7 +422,43 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    import itertools
+
+    currentPosition, visitedCorners = state
+
+    # Identify unvisited corners
+    unvisited = [corner for corner, visited in zip(corners, visitedCorners) if not visited]
+    if not unvisited:
+        return 0
+
+    # Cache BFS shortest-path distances from each corner to all maze cells
+    if not hasattr(problem, '_cornerDistances'):
+        problem._cornerDistances = {}
+        for c in corners:
+            distMap = {c: 0}
+            queue = util.Queue()
+            queue.push(c)
+            while not queue.isEmpty():
+                curr = queue.pop()
+                d = distMap[curr]
+                cx, cy = curr
+                for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nx, ny = cx + dx, cy + dy
+                    if not walls[nx][ny] and (nx, ny) not in distMap:
+                        distMap[(nx, ny)] = d + 1
+                        queue.push((nx, ny))
+            problem._cornerDistances[c] = distMap
+
+    # Calculate the minimum maze distance tour visiting all remaining unvisited corners
+    minCost = float('inf')
+    for perm in itertools.permutations(unvisited):
+        cost = problem._cornerDistances[perm[0]].get(currentPosition, util.manhattanDistance(currentPosition, perm[0]))
+        for i in range(len(perm) - 1):
+            cost += problem._cornerDistances[perm[i]].get(perm[i + 1], util.manhattanDistance(perm[i], perm[i + 1]))
+        if cost < minCost:
+            minCost = cost
+
+    return minCost
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
