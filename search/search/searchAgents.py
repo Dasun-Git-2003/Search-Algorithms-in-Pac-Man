@@ -386,9 +386,9 @@ class CornersProblem(search.SearchProblem):
         self._expanded += 1  # DO NOT CHANGE — autograder reads this counter
         return successors
 
-    # =========================================================================
+
     # MEMBER C — Q5: CornersProblem END
-    # =========================================================================
+
 
 
     def getCostOfActions(self, actions):
@@ -404,6 +404,9 @@ class CornersProblem(search.SearchProblem):
             if self.walls[x][y]: return 999999
         return len(actions)
 
+# =============================================================================
+# QUESTION 6 — Corners Heuristic (cornersHeuristic)
+# =============================================================================
 
 def cornersHeuristic(state: Any, problem: CornersProblem):
     """
@@ -445,6 +448,9 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
             min_distance = dist
 
     return min_distance
+
+# QUESTION 6 — END
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -621,6 +627,12 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
 
     return maxHeuristic
 
+# QUESTION 7 — END
+
+# =============================================================================
+# QUESTION 8 — Find Path to Closest Dot
+# =============================================================================
+
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
     def registerInitialState(self, state):
@@ -687,6 +699,10 @@ class AnyFoodSearchProblem(PositionSearchProblem):
 
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
+
+# =============================================================================
+# QUESTION 8 — END
+# =============================================================================
 
 def mazeDistance(point1: Tuple[int, int], point2: Tuple[int, int], gameState: pacman.GameState) -> int:
     """

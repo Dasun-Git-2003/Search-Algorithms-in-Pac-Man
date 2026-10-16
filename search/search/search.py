@@ -71,6 +71,9 @@ def tinyMazeSearch(problem):
     s = Directions.SOUTH
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
+# =============================================================================
+# QUESTION 1 — Depth-First Search (DFS)
+# =============================================================================
 
 def depthFirstSearch(problem: SearchProblem):
     """
@@ -110,6 +113,8 @@ def depthFirstSearch(problem: SearchProblem):
                     frontier.push((successor, actions + [action]))
 
     return []
+
+# QUESTION 1 — END
   
 def breadthFirstSearch(problem: SearchProblem):
     """
@@ -123,9 +128,9 @@ def breadthFirstSearch(problem: SearchProblem):
     or an empty list [] if the start is already a goal or no path exists.
     """
 
-    # -------------------------------------------------------------------------
-    # MEMBER C — Q2: breadthFirstSearch START
-    # -------------------------------------------------------------------------
+# -------------------------------------------------------------------------
+# Q2: breadthFirstSearch START
+# -------------------------------------------------------------------------
 
     # Fringe: util.Queue gives FIFO order (shallowest node expanded first).
     # Each item stored is (state, path) where:
@@ -169,9 +174,10 @@ def breadthFirstSearch(problem: SearchProblem):
     # Fringe exhausted without finding the goal — no solution exists.
     return []
 
-    # -------------------------------------------------------------------------
-    # MEMBER C — Q2: breadthFirstSearch END
-    # -------------------------------------------------------------------------
+
+# =============================================================================
+# QUESTION 3 — Uniform Cost Search (UCS)
+# =============================================================================
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
@@ -202,7 +208,8 @@ def uniformCostSearch(problem: SearchProblem):
                 )
 
     return []
-    
+
+# QUESTION 3 — END
 
 def nullHeuristic(state, problem=None):
     """
@@ -210,6 +217,10 @@ def nullHeuristic(state, problem=None):
     goal in the provided SearchProblem.  This heuristic is trivial.
     """
     return 0
+
+# =============================================================================
+# QUESTION 4 — A* Search (aStarSearch)
+# =============================================================================
 
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
@@ -244,6 +255,9 @@ def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
                 )
 
     return []
+
+# QUESTION 4 — END
+
     
 
 

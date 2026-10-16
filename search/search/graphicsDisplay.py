@@ -66,7 +66,7 @@ PACMAN_SCALE = 0.5
 
 # Food
 FOOD_COLOR = formatColor(1,1,1)
-FOOD_SIZE = 0.1
+FOOD_SIZE = 0.25
 
 # Laser
 LASER_COLOR = formatColor(1,0,0)
@@ -74,7 +74,7 @@ LASER_SIZE = 0.02
 
 # Capsule graphics
 CAPSULE_COLOR = formatColor(1,1,1)
-CAPSULE_SIZE = 0.25
+CAPSULE_SIZE = 0.35
 
 # Drawing walls
 WALL_RADIUS = 0.15
@@ -533,7 +533,7 @@ class PacmanGraphics:
                 if cell: # There's food here
                     screen = self.to_screen((xNum, yNum ))
                     dot = circle( screen,
-                                  FOOD_SIZE * self.gridSize,
+                                  max(FOOD_SIZE * self.gridSize, 4.0),
                                   outlineColor = color, fillColor = color,
                                   width = 1)
                     imageRow.append(dot)

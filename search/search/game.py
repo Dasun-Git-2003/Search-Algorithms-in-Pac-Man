@@ -25,6 +25,12 @@ import time, os
 import traceback
 import sys
 
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 #######################
 # Parts worth reading #
 #######################
@@ -459,7 +465,7 @@ class GameStateData:
 
     def _foodWallStr( self, hasFood, hasWall ):
         if hasFood:
-            return '.'
+            return '•'
         elif hasWall:
             return '%'
         else:
